@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — ExamPortal</title>
+  <meta name="description" content="Student and Admin dashboard for ExamPortal online examination system."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/main.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body class="app-body">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="10" fill="url(#sg)"/><path d="M10 12h16M10 18h10M10 24h8" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="27" cy="23" r="5" fill="white" fill-opacity="0.9"/><path d="M25 23l1.2 1.2 2.5-2.5" stroke="#6C47FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="sg" x1="0" y1="0" x2="36" y2="36"><stop stop-color="#6C47FF"/><stop offset="1" stop-color="#A855F7"/></linearGradient></defs></svg>
+        <span>ExamPortal</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <!-- Injected dynamically -->
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card" id="sidebar-user">
+        <div class="user-avatar" id="sidebar-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-name">Loading...</div>
+          <div class="user-role" id="sidebar-role">---</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()" id="logout-btn">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/></svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Mobile overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- Main Content -->
+  <main class="main-content" id="main-content">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <button class="menu-btn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+      </button>
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-right">
+        <div class="notif-badge" id="topbar-role-badge">Student</div>
+      </div>
+    </header>
+
+    <!-- Page Views (injected by JS) -->
+    <div class="page-view" id="page-view">
+      <div class="loading-spinner-wrap">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Global Toast -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Modal</h3>
+        <button class="modal-close" onclick="closeModal()">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/views/dashboard-view.js"></script>
+  <script src="/js/views/exams-view.js"></script>
+  <script src="/js/views/exam-take-view.js"></script>
+  <script src="/js/views/results-view.js"></script>
+  <script src="/js/views/users-view.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
