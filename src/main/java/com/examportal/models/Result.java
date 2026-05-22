@@ -15,6 +15,9 @@ public class Result {
     private String submittedAt;
     private int correctAnswers;
     private int totalQuestions;
+    private boolean cheatingFlag;
+    private int cheatCount;
+    private String questionTimes;
 
     public Result() {}
 
@@ -46,14 +49,25 @@ public class Result {
     public void setCorrectAnswers(int correctAnswers) { this.correctAnswers = correctAnswers; }
     public int getTotalQuestions() { return totalQuestions; }
     public void setTotalQuestions(int totalQuestions) { this.totalQuestions = totalQuestions; }
+    public boolean isCheatingFlag() { return cheatingFlag; }
+    public void setCheatingFlag(boolean cheatingFlag) { this.cheatingFlag = cheatingFlag; }
+    public int getCheatCount() { return cheatCount; }
+    public void setCheatCount(int cheatCount) { this.cheatCount = cheatCount; }
+    public String getQuestionTimes() { return questionTimes; }
+    public void setQuestionTimes(String questionTimes) { this.questionTimes = questionTimes; }
 
     public String toJson() {
         double percentage = totalMarks > 0 ? (double) score / totalMarks * 100 : 0;
         return String.format(
-            "{\"id\":%d,\"userId\":%d,\"examId\":%d,\"username\":\"%s\",\"fullName\":\"%s\",\"examTitle\":\"%s\",\"score\":%d,\"totalMarks\":%d,\"passingMarks\":%d,\"timeTaken\":%d,\"passed\":%b,\"submittedAt\":\"%s\",\"correctAnswers\":%d,\"totalQuestions\":%d,\"percentage\":%.2f}",
+            "{\"id\":%d,\"userId\":%d,\"examId\":%d,\"username\":\"%s\",\"fullName\":\"%s\",\"examTitle\":\"%s\"," +
+            "\"score\":%d,\"totalMarks\":%d,\"passingMarks\":%d,\"timeTaken\":%d,\"passed\":%b," +
+            "\"submittedAt\":\"%s\",\"correctAnswers\":%d,\"totalQuestions\":%d,\"percentage\":%.2f," +
+            "\"cheatingFlag\":%b,\"cheatCount\":%d,\"questionTimes\":%s}",
             id, userId, examId, escapeJson(username), escapeJson(fullName), escapeJson(examTitle),
             score, totalMarks, passingMarks, timeTaken, passed, escapeJson(submittedAt),
-            correctAnswers, totalQuestions, percentage
+            correctAnswers, totalQuestions, percentage,
+            cheatingFlag, cheatCount,
+            (questionTimes != null && !questionTimes.isEmpty()) ? questionTimes : "{}"
         );
     }
 

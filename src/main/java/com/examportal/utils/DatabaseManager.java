@@ -105,11 +105,25 @@ public class DatabaseManager {
                 passed INTEGER NOT NULL DEFAULT 0,
                 correct_answers INTEGER NOT NULL DEFAULT 0,
                 total_questions INTEGER NOT NULL DEFAULT 0,
+                cheating_flag INTEGER NOT NULL DEFAULT 0,
+                cheat_count INTEGER NOT NULL DEFAULT 0,
+                question_times TEXT DEFAULT '{}',
                 submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id),
                 FOREIGN KEY (exam_id) REFERENCES exams(id)
             )
         """);
+
+        // Migrate existing results table if columns missing
+        try {
+            stmt.execute("ALTER TABLE results ADD COLUMN cheating_flag INTEGER NOT NULL DEFAULT 0");
+        } catch (Exception ignored) {}
+        try {
+            stmt.execute("ALTER TABLE results ADD COLUMN cheat_count INTEGER NOT NULL DEFAULT 0");
+        } catch (Exception ignored) {}
+        try {
+            stmt.execute("ALTER TABLE results ADD COLUMN question_times TEXT DEFAULT '{}'");
+        } catch (Exception ignored) {}
 
         // Answers table
         stmt.execute("""

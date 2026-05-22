@@ -77,6 +77,22 @@ public class ResultHandler implements HttpHandler {
         String body = HttpUtils.readRequestBody(exchange);
         String examIdStr = HttpUtils.parseJsonValue(body, "examId");
         String timeTakenStr = HttpUtils.parseJsonValue(body, "timeTaken");
+        String cheatCountStr = HttpUtils.parseJsonValue(body, "cheatCount");
+        String questionTimesRaw = null;
+        // Extract questionTimes JSON object
+        int qtIdx = body.indexOf("\"questionTimes\"");
+        if (qtIdx != -1) {
+            int start = body.indexOf("{", qtIdx + 14);
+            if (start != -1) {
+                int depth = 0, end = start;
+                while (end < body.length()) {
+                    char c = body.charAt(end);
+                    if (c == '{') depth++; else if (c == '}') { depth--; if (depth == 0) break; }
+                    end++;
+                }
+                questionTimesRaw = body.substring(start, end + 1);
+            }
+        }
 
         if (examIdStr == null) { HttpUtils.sendError(exchange, 400, "examId required"); return; }
 
@@ -91,9 +107,9 @@ public class ResultHandler implements HttpHandler {
 
         List<Question> questions = questionDao.findByExamId(examId);
 
-        // Parse answers: {"answers":{"1":"A","2":"B",...}}
         int score = 0;
         int correctCount = 0;
+        int cheatCount = cheatCountStr != null ? Integer.parseInt(cheatCountStr) : 0;
 
         Result result = new Result();
         result.setUserId(user.getId());
@@ -102,6 +118,9 @@ public class ResultHandler implements HttpHandler {
         result.setPassingMarks(exam.getPassingMarks());
         result.setTimeTaken(timeTakenStr != null ? Integer.parseInt(timeTakenStr) : 0);
         result.setTotalQuestions(questions.size());
+        result.setCheatingFlag(cheatCount >= 3);
+        result.setCheatCount(cheatCount);
+        result.setQuestionTimes(questionTimesRaw != null ? questionTimesRaw : "{}");
 
         int resultId = resultDao.create(result);
 
@@ -134,6 +153,7 @@ public class ResultHandler implements HttpHandler {
         Result savedResult = resultDao.findById(resultId);
         HttpUtils.sendResponse(exchange, 201, "{\"success\":true,\"data\":" + savedResult.toJson() + "}");
     }
+
 
     private String extractAnswersObject(String body) {
         int idx = body.indexOf("\"answers\"");

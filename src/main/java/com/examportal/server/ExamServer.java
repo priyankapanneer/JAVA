@@ -32,12 +32,18 @@ public class ExamServer {
         ExamHandler examHandler = new ExamHandler();
         ResultHandler resultHandler = new ResultHandler();
         UserHandler userHandler = new UserHandler();
+        LeaderboardHandler leaderboardHandler = new LeaderboardHandler();
+        AnalyticsHandler analyticsHandler = new AnalyticsHandler();
+        ExportHandler exportHandler = new ExportHandler();
 
         server.createContext("/api/auth", authHandler);
         server.createContext("/api/exams", examHandler);
         server.createContext("/api/results", resultHandler);
         server.createContext("/api/dashboard", resultHandler);
         server.createContext("/api/users", userHandler);
+        server.createContext("/api/leaderboard", leaderboardHandler);
+        server.createContext("/api/analytics", analyticsHandler);
+        server.createContext("/api/export", exportHandler);
 
         // Serve static files
         server.createContext("/", new StaticFileHandler(staticDir));
@@ -47,10 +53,11 @@ public class ExamServer {
         server.start();
 
         System.out.println("==================================================");
-        System.out.println("  Online Examination System Started!");
+        System.out.println("  Online Examination System — Enhanced Edition");
         System.out.println("==================================================");
-        System.out.println("  URL:   http://localhost:" + PORT);
-        System.out.println("  Admin: admin / admin123");
+        System.out.println("  URL:         http://localhost:" + PORT);
+        System.out.println("  Admin:       admin / admin123");
+        System.out.println("  Features:    Leaderboard | Analytics | Anti-Cheat | CSV Export");
         System.out.println("==================================================");
     }
 }

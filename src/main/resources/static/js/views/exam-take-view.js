@@ -1,7 +1,11 @@
-/* ===== EXAM TAKING VIEW ===== */
+/* ===== EXAM TAKING VIEW — with Anti-Cheat & Time Tracking ===== */
 let examState = {
   exam: null, questions: [], answers: {}, currentQ: 0,
-  startTime: null, timerInterval: null, timeLeft: 0
+  startTime: null, timerInterval: null, timeLeft: 0,
+  // Anti-cheat
+  cheatCount: 0, maxWarnings: 3,
+  // Per-question time tracking
+  questionTimes: {}, questionStartTime: null
 };
 
 async function renderExamTakeView(container, examId, user) {
@@ -21,12 +25,18 @@ async function renderExamTakeView(container, examId, user) {
       return;
     }
 
-    examState = { exam, questions, answers: {}, currentQ: 0, startTime: Date.now(),
-      timerInterval: null, timeLeft: exam.duration * 60 };
+    examState = {
+      exam, questions, answers: {}, currentQ: 0,
+      startTime: Date.now(), timerInterval: null,
+      timeLeft: exam.duration * 60,
+      cheatCount: 0, maxWarnings: 3,
+      questionTimes: {}, questionStartTime: Date.now()
+    };
 
     container.innerHTML = buildExamLayout(exam, questions);
     updateQuestionView();
     startTimer();
+    setupAntiCheat();
   } catch (e) {
     container.innerHTML = `<div class="error-msg">Failed to load exam: ${e.message}</div>`;
   }
@@ -38,6 +48,7 @@ function buildExamLayout(exam, questions) {
   ).join('');
 
   return `
+  <div id="cheat-warning-bar" class="cheat-warning-bar hidden"></div>
   <div class="exam-header-bar">
     <div>
       <div style="font-weight:700;color:var(--text);font-size:1rem">${exam.title}</div>
@@ -69,6 +80,11 @@ function buildExamLayout(exam, questions) {
         <div style="margin-top:14px;font-size:.82rem;color:var(--text-2)">
           Answered: <strong id="answered-count" style="color:var(--primary-light)">0</strong> / ${examState.questions.length}
         </div>
+        <div id="cheat-indicator" style="margin-top:12px;display:none">
+          <div style="font-size:.78rem;color:var(--warning);font-weight:600">
+            ${ICONS.shield} Warnings: <span id="cheat-count-display">0</span>/3
+          </div>
+        </div>
       </div>
     </div>
   </div>`;
@@ -78,6 +94,14 @@ function updateQuestionView() {
   const { questions, currentQ, answers } = examState;
   const q = questions[currentQ];
   const selected = answers[q.id];
+
+  // Track time on previous question
+  if (examState.questionStartTime) {
+    const prev = questions[currentQ]; // will track on next call
+    const elapsed = Math.floor((Date.now() - examState.questionStartTime) / 1000);
+    examState.questionTimes[q.id] = (examState.questionTimes[q.id] || 0) + elapsed;
+  }
+  examState.questionStartTime = Date.now();
 
   document.getElementById('question-area').innerHTML = `
     <div class="question-item">
@@ -111,6 +135,12 @@ function selectAnswer(questionId, option) {
 
 function goToQuestion(idx) {
   if (idx < 0 || idx >= examState.questions.length) return;
+  // Save time on current question before switching
+  const elapsed = Math.floor((Date.now() - examState.questionStartTime) / 1000);
+  const curQ = examState.questions[examState.currentQ];
+  examState.questionTimes[curQ.id] = (examState.questionTimes[curQ.id] || 0) + elapsed;
+  examState.questionStartTime = Date.now();
+
   examState.currentQ = idx;
   updateQuestionView();
 }
@@ -125,6 +155,48 @@ function startTimer() {
     if (examState.timeLeft <= 60)  { timerEl?.classList.remove('warning'); timerEl?.classList.add('danger'); }
     if (examState.timeLeft <= 0)   { clearInterval(examState.timerInterval); submitExam(true); }
   }, 1000);
+}
+
+/* ===== ANTI-CHEAT SYSTEM ===== */
+function setupAntiCheat() {
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('blur', handleWindowBlur);
+}
+
+function cleanupAntiCheat() {
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  window.removeEventListener('blur', handleWindowBlur);
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) triggerCheatWarning('Tab switching detected');
+}
+
+function handleWindowBlur() {
+  if (currentView === 'exam-take') triggerCheatWarning('Window focus lost');
+}
+
+function triggerCheatWarning(reason) {
+  if (currentView !== 'exam-take') return;
+  examState.cheatCount++;
+  const remaining = examState.maxWarnings - examState.cheatCount;
+
+  const bar = document.getElementById('cheat-warning-bar');
+  const indicator = document.getElementById('cheat-indicator');
+  const countDisplay = document.getElementById('cheat-count-display');
+
+  if (bar) {
+    bar.className = 'cheat-warning-bar';
+    bar.innerHTML = `⚠️ Warning ${examState.cheatCount}/${examState.maxWarnings}: ${reason}! ${remaining > 0 ? `${remaining} warning(s) left before auto-submit.` : 'Auto-submitting now!'}`;
+    setTimeout(() => { if (bar) bar.classList.add('hidden'); }, 4000);
+  }
+
+  if (indicator) indicator.style.display = 'block';
+  if (countDisplay) countDisplay.textContent = examState.cheatCount;
+
+  if (examState.cheatCount >= examState.maxWarnings) {
+    setTimeout(() => submitExam(true, true), 1500);
+  }
 }
 
 function formatTime(secs) {
@@ -145,24 +217,41 @@ function confirmSubmit() {
   );
 }
 
-async function submitExam(autoSubmit = false) {
+async function submitExam(autoSubmit = false, cheated = false) {
   clearInterval(examState.timerInterval);
+  cleanupAntiCheat();
+
+  // Save time on last question
+  if (examState.questionStartTime) {
+    const curQ = examState.questions[examState.currentQ];
+    if (curQ) {
+      const elapsed = Math.floor((Date.now() - examState.questionStartTime) / 1000);
+      examState.questionTimes[curQ.id] = (examState.questionTimes[curQ.id] || 0) + elapsed;
+    }
+  }
+
   const timeTaken = Math.floor((Date.now() - examState.startTime) / 1000);
 
-  document.getElementById('page-view').innerHTML = `
-    <div class="loading-spinner-wrap"><div class="spinner"></div><p>${autoSubmit ? 'Time up! Submitting...' : 'Submitting exam...'}</p></div>`;
+  let msg = autoSubmit
+    ? (cheated ? '🚫 Exam auto-submitted due to violations...' : 'Time up! Submitting...')
+    : 'Submitting exam...';
+
+  document.getElementById('page-view').innerHTML =
+    `<div class="loading-spinner-wrap"><div class="spinner"></div><p>${msg}</p></div>`;
 
   try {
     const payload = {
       examId: examState.exam.id,
       timeTaken,
+      cheatCount: examState.cheatCount,
+      questionTimes: examState.questionTimes,
       answers: examState.answers
     };
     const res = await Api.submitExam(payload);
     navigateTo('result-detail', { resultId: res.data.id });
     showToast('Exam submitted successfully!', 'success');
   } catch (e) {
-    showToast('Submission failed: '+e.message, 'error');
+    showToast('Submission failed: ' + e.message, 'error');
     navigateTo('exams');
   }
 }

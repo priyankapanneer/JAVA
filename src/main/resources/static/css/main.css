@@ -25,6 +25,22 @@
   --radius-lg: 18px;
   --transition: all 0.22s cubic-bezier(.4,0,.2,1);
 }
+
+/* ===== LIGHT MODE ===== */
+body.light-mode {
+  --bg: #F0F2FF;
+  --bg-2: #FFFFFF;
+  --bg-3: #F5F5FF;
+  --bg-4: #EAEAF8;
+  --border: rgba(0,0,0,0.08);
+  --border-2: rgba(0,0,0,0.14);
+  --text: #1A1530;
+  --text-2: #4A4570;
+  --text-3: #8882AA;
+  --shadow: 0 8px 32px rgba(108,71,255,0.12);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+}
+
 body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--bg); line-height: 1.6; -webkit-font-smoothing: antialiased; }
 a { color: var(--primary-light); text-decoration: none; }
 button { cursor: pointer; font-family: inherit; }

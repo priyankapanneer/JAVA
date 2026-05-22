@@ -13,6 +13,7 @@ async function renderUsersView(container) {
     container.innerHTML = `
       <div class="page-header">
         <div><h2>Manage Students</h2><p>${students.length} student(s) · ${admins.length} admin(s)</p></div>
+        <button class="btn-secondary" onclick="downloadCsv('/api/export/students')">${ICONS.download} Export CSV</button>
       </div>
       <div class="stats-grid" style="margin-bottom:24px">
         <div class="stat-card cyan">

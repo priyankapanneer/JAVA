@@ -9,13 +9,12 @@ async function renderResultsView(container, user) {
       <div class="page-header">
         <div><h2>${isAdmin ? 'All Results' : 'My Results'}</h2>
           <p>${results.length} result(s)</p></div>
+        ${isAdmin ? `<button class="btn-secondary" onclick="downloadCsv('/api/export/results')">${ICONS.download} Export CSV</button>` : ''}
       </div>
-      ${results.length === 0
-        ? emptyState(ICONS.results, 'No results yet', isAdmin ? 'Results will appear when students submit exams.' : 'Take an exam to see your results here.')
         : `<div class="table-wrap"><table>
           <thead><tr>
             ${isAdmin ? '<th>Student</th>' : ''}
-            <th>Exam</th><th>Score</th><th>%</th><th>Status</th><th>Time Taken</th><th>Date</th><th></th>
+            <th>Exam</th><th>Score</th><th>%</th><th>Status</th><th>Time Taken</th>${isAdmin ? '<th>Cheat Warnings</th>' : ''}<th>Date</th><th></th>
           </tr></thead>
           <tbody>
             ${results.map(r => `
@@ -26,6 +25,7 @@ async function renderResultsView(container, user) {
                 <td>${pct(r.score, r.totalMarks)}%</td>
                 <td>${badgeResult(r.passed)}</td>
                 <td style="font-size:.82rem">${formatDuration(r.timeTaken)}</td>
+                ${isAdmin ? `<td>${r.cheatCount > 0 ? `<span class="badge badge-fail">⚠ ${r.cheatCount}</span>` : '<span style="color:var(--text-3);font-size:.8rem">Clean</span>'}</td>` : ''}
                 <td style="font-size:.78rem">${formatDateTime(r.submittedAt)}</td>
                 <td><button class="btn-icon" title="View Detail" onclick="navigateTo('result-detail',{resultId:${r.id}})">${ICONS.eye}</button></td>
               </tr>`).join('')}

@@ -7,6 +7,11 @@ async function initApp() {
   const token = localStorage.getItem('ep_token');
   if (!token) { window.location.href = '/index.html'; return; }
 
+  // Apply saved dark mode
+  if (localStorage.getItem('ep_dark') === 'light') {
+    document.body.classList.add('light-mode');
+  }
+
   try {
     const res = await Api.getMe();
     currentUser = res.data;
@@ -29,10 +34,19 @@ function renderSidebar() {
   const nav = document.getElementById('sidebar-nav');
   const adminItems = `
     <div class="nav-section">
-      <div class="nav-section-label">Admin</div>
+      <div class="nav-section-label">Overview</div>
       <button class="nav-item" data-view="dashboard" onclick="navigateTo('dashboard')">
         ${ICONS.dashboard} Dashboard <span class="nav-indicator"></span>
       </button>
+      <button class="nav-item" data-view="analytics" onclick="navigateTo('analytics')">
+        ${ICONS.chart} Analytics <span class="nav-indicator"></span>
+      </button>
+      <button class="nav-item" data-view="leaderboard" onclick="navigateTo('leaderboard')">
+        ${ICONS.trophy} Leaderboard <span class="nav-indicator"></span>
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Management</div>
       <button class="nav-item" data-view="exams" onclick="navigateTo('exams')">
         ${ICONS.exam} Manage Exams <span class="nav-indicator"></span>
       </button>
@@ -55,6 +69,9 @@ function renderSidebar() {
       <button class="nav-item" data-view="results" onclick="navigateTo('results')">
         ${ICONS.results} My Results <span class="nav-indicator"></span>
       </button>
+      <button class="nav-item" data-view="leaderboard" onclick="navigateTo('leaderboard')">
+        ${ICONS.trophy} Leaderboard <span class="nav-indicator"></span>
+      </button>
     </div>`;
   nav.innerHTML = isAdmin ? adminItems : studentItems;
 }
@@ -69,6 +86,13 @@ function renderTopbar() {
     ? 'rgba(168,85,247,0.3)' : 'rgba(6,182,212,0.3)';
 }
 
+function toggleDarkMode() {
+  const isLight = document.body.classList.toggle('light-mode');
+  localStorage.setItem('ep_dark', isLight ? 'light' : 'dark');
+  const btn = document.getElementById('dark-toggle-btn');
+  if (btn) btn.innerHTML = isLight ? ICONS.moon : ICONS.sun;
+}
+
 function navigateTo(view, params = {}) {
   currentView = view;
 
@@ -78,9 +102,16 @@ function navigateTo(view, params = {}) {
   });
 
   // Update page title
-  const titles = { dashboard:'Dashboard', exams: currentUser?.role === 'admin' ? 'Manage Exams' : 'Available Exams',
+  const titles = {
+    dashboard: 'Dashboard',
+    exams: currentUser?.role === 'admin' ? 'Manage Exams' : 'Available Exams',
     results: currentUser?.role === 'admin' ? 'All Results' : 'My Results',
-    users:'Students', 'exam-take':'Take Exam', 'result-detail':'Result Detail' };
+    users: 'Students',
+    leaderboard: '🏆 Leaderboard',
+    analytics: '📊 Analytics',
+    'exam-take': 'Take Exam',
+    'result-detail': 'Result Detail'
+  };
   document.getElementById('page-title').textContent = titles[view] || view;
 
   // Close mobile sidebar
@@ -92,11 +123,13 @@ function navigateTo(view, params = {}) {
   pageView.innerHTML = `<div class="loading-spinner-wrap"><div class="spinner"></div><p>Loading...</p></div>`;
 
   const views = {
-    dashboard:     () => renderDashboardView(pageView),
-    exams:         () => renderExamsView(pageView, currentUser),
-    results:       () => renderResultsView(pageView, currentUser),
-    users:         () => renderUsersView(pageView),
-    'exam-take':   () => renderExamTakeView(pageView, params.examId, currentUser),
+    dashboard:       () => renderDashboardView(pageView),
+    exams:           () => renderExamsView(pageView, currentUser),
+    results:         () => renderResultsView(pageView, currentUser),
+    users:           () => renderUsersView(pageView),
+    leaderboard:     () => renderLeaderboardView(pageView),
+    analytics:       () => renderAnalyticsView(pageView),
+    'exam-take':     () => renderExamTakeView(pageView, params.examId, currentUser),
     'result-detail': () => renderResultDetailView(pageView, params.resultId),
   };
 

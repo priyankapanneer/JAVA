@@ -51,4 +51,10 @@ const Api = {
   // Users
   getUsers()                          { return this.get('/users'); },
   deleteUser(id)                      { return this.delete(`/users/${id}`); },
+
+  // New Features
+  getLeaderboard()                    { return this.get('/leaderboard'); },
+  getAnalytics()                      { return this.get('/analytics'); },
+  exportResultsCsv()                  { return `/api/export/results`; },
+  exportStudentsCsv()                 { return `/api/export/students`; },
 };
