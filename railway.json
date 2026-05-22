@@ -1,0 +1,11 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "mkdir -p out/classes && find src -name '*.java' > sources.txt && javac -cp lib/sqlite-jdbc.jar -d out/classes @sources.txt && cp -r src/main/resources/static out/classes/ && cd out/classes && jar xf ../../lib/sqlite-jdbc.jar && cd ../.. && jar --create --file=examportal.jar --main-class=com.examportal.server.ExamServer -C out/classes ."
+  },
+  "deploy": {
+    "startCommand": "java -jar examportal.jar",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
