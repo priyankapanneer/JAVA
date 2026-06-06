@@ -1,0 +1,9 @@
+Name,Department,Salary
+Alice,Engineering,85000
+Bob,Sales,62000
+Carol,Engineering,92000
+Dave,HR,54000
+Eve,Marketing,71000
+Frank,Finance,invalid_salary
+Grace,Engineering,103000
+
